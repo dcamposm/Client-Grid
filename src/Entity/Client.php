@@ -26,9 +26,6 @@ class Client
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $email = null;
 
-    #[ORM\Column]
-    private ?int $age = null;
-
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $birthday = null;
 
@@ -81,18 +78,6 @@ class Client
     public function setEmail(?string $email): self
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    public function getAge(): ?int
-    {
-        return $this->age;
-    }
-
-    public function setAge(int $age): self
-    {
-        $this->age = $age;
 
         return $this;
     }
