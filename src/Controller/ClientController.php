@@ -27,7 +27,7 @@ class ClientController extends AbstractController
         $clients = $this->clientRepository->findAll();
 
          $clients = $paginator->paginate(
-            $this->clientRepository->findAll(), /* query NOT result */
+            $this->clientRepository->findAll(), 
             $request->query->getInt('page', 1), /*page number*/
             10 /*limit per page*/
         );
@@ -37,8 +37,25 @@ class ClientController extends AbstractController
         ]);
     }
 
-    #[Route('/client/add', name: 'add_client', methods: ['POST'])]
-    public function add(Request $request): JsonResponse
+    #[Route('/client/{id}', name: 'show_client', methods: ['GET'])]
+    public function show($id): JsonResponse
+    {
+        $client = $this->clientRepository->findOneBy(['id' => $id]);
+
+        $data = [
+            'id' => $client->getId(),
+            'name' => $client->getName(),
+            'lastname' => $client->getLastname(),
+            'phone' => $client->getPhone(),
+            'email' => $client->getEmail(),
+            'birthday' => $client->getBirthday(),
+        ];
+
+        return new JsonResponse($data, Response::HTTP_OK);
+    }
+
+    #[Route('/client/insert', name: 'insert_client', methods: ['POST'])]
+    public function insert(Request $request): JsonResponse
     {
         $name = $request->get('name');
         $lastname = $request->get('lastname');
@@ -60,6 +77,42 @@ class ClientController extends AbstractController
 
         $this->clientRepository->save($client,true);
 
-        return new JsonResponse(['status' => 'Client created!'], Response::HTTP_CREATED);
+        return new JsonResponse(['status' => 'Client created!'], Response::HTTP_OK);
+    }
+
+    #[Route('/client/update/{id}', name: 'update_client', methods: ['POST'])]
+    public function update($id, Request $request): JsonResponse
+    {
+        $client = $this->clientRepository->findOneBy(['id' => $id]);
+
+        if (empty($client)) throw new NotFoundHttpException('ERROR!');
+
+        $name = $request->get('name');
+        $lastname = $request->get('lastname');
+        $phone = $request->get('phone');
+        $email = $request->get('email');
+        $birthday = new \DateTime($request->get('birthday'));
+
+        empty($name) ? true : $client->setName($name);
+        empty($lastname) ? true : $client->setLastname($lastname);
+        empty($phone) ? true : $client->setPhone($phone);
+        empty($email) ? true : $client->setEmail($email);
+        empty($birthday) ? true : $client->setBirthday($birthday);
+
+        $this->clientRepository->save($client,true);
+
+        return new JsonResponse(['status' => 'Client updated!'], Response::HTTP_OK);
+    }
+
+   #[Route('/client/{id}', name: 'delete_client', methods: ['DELETE'])]
+    public function delete($id): JsonResponse
+    {
+        $client = $this->clientRepository->findOneBy(['id' => $id]);
+
+        if (empty($client)) throw new NotFoundHttpException('ERROR!');
+
+        $this->clientRepository->remove($client, true);
+
+        return new JsonResponse(['status' => 'Client deleted'], Response::HTTP_OK);
     }
 }
